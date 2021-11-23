@@ -17,8 +17,29 @@ contract StrainzMaster is Ownable {
     SeedzToken public seedzToken = new SeedzToken(msg.sender);
     StrainzAccessory public strainzAccessory = new StrainzAccessory(msg.sender);
     StrainzMarketplace public strainzMarketplace = new StrainzMarketplace();
-    constructor() {
+    
+    //data structure for manager system begins - connova
 
+    mapping(address => bool) isManager;
+
+    struct Operation {
+        string functionName;
+        string input;
+        uint operationId;
+        uint tally;
+    }
+    Operation[] operations;
+    uint operationIds;
+
+    modifier managersOnly {
+        require(isManager[msg.sender], "Error: you are not a manager");
+        _;
+    }
+
+    // data structure for managers ends - connova
+
+    constructor() {
+        isManager[msg.sender] = true;
     }
 
     bool migrationActive = true;
@@ -31,6 +52,25 @@ contract StrainzMaster is Ownable {
 
     function setMigration(bool active) public onlyOwner {
         migrationActive = active;
+    }
+
+    function setNewOwner(address newOwner) public {
+        transferOwnership(newOwner);
+    }
+
+    function addManager(address newManager) public onlyOwner {
+        require(!isManager[newManager], "Error: the address is already a manager");
+        isManager[newManager] = true;
+    }
+
+    function removeManager(address manager) public onlyOwner {
+        require(isManager[manager], "Error: that address is already not a manager");
+        require(manager != owner(), "Error: the owner cannot be removed");
+        isManager[manager] = false;
+    }
+
+    function isUserManager(address user) public view returns(bool userIsManager) {
+        return isManager[user];
     }
 
     function setGrowFertilizerDetails(uint newCost, uint newBoost) public onlyOwner {

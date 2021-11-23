@@ -61,7 +61,7 @@ contract StrainzMarketplace is IERC721Receiver {
         require(trade.status == TradeStatus.Open);
         uint marketPlaceShare = trade.strainzTokenPrice * marketplaceFee / 100;
 
-        master.strainzToken().marketPlaceBurn(msg.sender, marketPlaceShare);
+        master.strainzToken().marketPlaceBurn(msg.sender, marketPlaceShare); // fee is burnt increasing market price of strainzToken
 
         master.strainzToken().transferFrom(msg.sender, trade.poster, trade.strainzTokenPrice - marketPlaceShare);
         IERC721 nftContract = IERC721(trade.nftContractAddress);

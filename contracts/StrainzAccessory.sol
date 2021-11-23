@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.0;
-
+//maybe we'll have to remove '../node_modules/' once deploying in the 3 lines below
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
