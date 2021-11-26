@@ -21,17 +21,13 @@ contract StrainzMaster is Ownable {
     //data structure for manager system begins - connova
 
     mapping(address => bool) isManager;
+    
+    uint[] setWateringPenaltyInputs;
+    mapping(uint => address) setWateringPenaltyCallers;
+    uint[] setMarketplaceFeeInputs;
+    mapping(uint => address) setMarketplaceFeeCallers;
 
-    struct Operation {
-        string functionName;
-        string input;
-        uint operationId;
-        uint tally;
-    }
-    Operation[] operations;
-    uint operationIds;
-
-    modifier managersOnly {
+    modifier onlyManagers {
         require(isManager[msg.sender], "Error: you are not a manager");
         _;
     }
@@ -39,7 +35,7 @@ contract StrainzMaster is Ownable {
     // data structure for managers ends - connova
 
     constructor() {
-        isManager[msg.sender] = true;
+        isManager[owner()] = true;  //-connova
     }
 
     bool migrationActive = true;
@@ -54,7 +50,7 @@ contract StrainzMaster is Ownable {
         migrationActive = active;
     }
 
-    function setNewOwner(address newOwner) public {
+    function setNewOwner(address newOwner) public {//don't need onlyOwner here since transferOwnership() already has it applied
         transferOwnership(newOwner);
     }
 
@@ -80,6 +76,7 @@ contract StrainzMaster is Ownable {
     function setBreedFertilizerCost(uint newBreedFertilizerCost) public onlyOwner {
         strainzNFT.setBreedFertilizerCost(newBreedFertilizerCost);
     }
+
     function setBreedingCostFactor(uint newBreedingCostFactor) public onlyOwner {
         strainzNFT.setBreedingCostFactor(newBreedingCostFactor);
     }
@@ -92,8 +89,31 @@ contract StrainzMaster is Ownable {
         strainzAccessory.setAccessoryBonus(accessoryType, bonus);
     }
 
-    function setWateringPenalty(uint newPenalty) public onlyOwner {
-        strainzNFT.setWateringPenalty(newPenalty);
+    function setWateringPenalty(uint newPenalty) public onlyManagers {
+        
+        for(uint i=0; i<setWateringPenaltyInputs.length; i++) {
+            
+            if(setWateringPenaltyInputs[i] == newPenalty) {
+
+                require(setWateringPenaltyCallers[newPenalty] != msg.sender, "Error: double submission by same manager");
+                
+                strainzNFT.setWateringPenalty(newPenalty);  //I added everything in this function except this line - connova
+
+                if(i != setWateringPenaltyInputs.length - 1) {
+                    setWateringPenaltyInputs[i] = setWateringPenaltyInputs[setWateringPenaltyInputs.length -1];
+                }
+
+                setWateringPenaltyInputs.pop();
+                setWateringPenaltyCallers[newPenalty] = address(0);
+
+            } else {
+                
+                setWateringPenaltyInputs.push(newPenalty);
+                setWateringPenaltyCallers[newPenalty] = msg.sender;
+
+            }
+        }
+
     }
 
     function setGrowFactor(uint newGrowFactor) public onlyOwner {
@@ -111,6 +131,7 @@ contract StrainzMaster is Ownable {
     function addSeedzPool(uint256 _allocPoint, IERC20 _lpToken, bool _withUpdate) public onlyOwner {
         seedzToken.add(_allocPoint, _lpToken, _withUpdate);
     }
+
     function setSeedzPool(uint256 _pid, uint256 _allocPoint, bool _withUpdate) public onlyOwner {
         seedzToken.set(_pid, _allocPoint, _withUpdate);
     }
@@ -118,11 +139,36 @@ contract StrainzMaster is Ownable {
     function setSeedzPerBlock(uint _seedzPerBlock) public onlyOwner {
         seedzToken.setSeedzPerBlock(_seedzPerBlock);
     }
+
     function mintPromotion(address receiver, string memory prefix, string memory postfix, uint dna) public onlyOwner {
+
         strainzNFT.mintPromotion(receiver, prefix, postfix, dna);
+
     }
 
-    function setMarketplaceFee(uint newFee) public onlyOwner {
-        strainzMarketplace.setMarketplaceFee(newFee);
+    function setMarketplaceFee(uint newFee) public onlyManagers { 
+
+        for(uint i=0; i<setMarketplaceFeeInputs.length; i++) {
+            
+            if(setMarketplaceFeeInputs[i] == newFee) {
+
+                require(setMarketplaceFeeCallers[newFee] != msg.sender, "Error: double submission by same manager");
+                
+                strainzMarketplace.setMarketplaceFee(newFee);   //I added everything in this function except this line - connova
+
+                if(i != setMarketplaceFeeInputs.length - 1) {
+                    setMarketplaceFeeInputs[i] = setMarketplaceFeeInputs[setMarketplaceFeeInputs.length -1];
+                }  
+
+                setMarketplaceFeeInputs.pop();
+                setMarketplaceFeeCallers[newFee] = address(0);
+            
+            } else {
+
+                setMarketplaceFeeInputs.push(newFee);
+                setMarketplaceFeeCallers[newFee] = msg.sender;
+
+            }
+        }
     }
 }
