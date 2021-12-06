@@ -56,5 +56,4 @@ contract StrainzToken is ERC20 {
     }
 
 
-
 }

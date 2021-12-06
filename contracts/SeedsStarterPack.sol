@@ -42,9 +42,11 @@ contract SeedsStarterPack is ERC721Enumerable{
 
     function buySeedsStarterPack(string memory firstNameOfPlant, string memory lastNameOfPlant) public {
         bool hasConsumablePot;
+        uint eligiblePotIndex;
         for (uint i = 0; i < wallet[msg.sender].length; i++) {
             if (isPot[wallet[msg.sender][i]] && !isNFTConsumedToMintStrainzNFT[wallet[msg.sender][i]]) {
                 hasConsumablePot = true;
+                eligiblePotIndex = i;
                 break;
             }
         }
@@ -55,6 +57,8 @@ contract SeedsStarterPack is ERC721Enumerable{
         _mint(msg.sender, starterPackID);
         uint dna = makeDNA();
         master.mintFromStarter(msg.sender, firstNameOfPlant, lastNameOfPlant, dna);
+        isNFTConsumedToMintStrainzNFT[wallet[msg.sender][eligiblePotIndex]] = true;
+        isNFTConsumedToMintStrainzNFT[starterPackID] = true;
     }
 
     function isTokenAPot(uint tokenId) public view returns(bool) {
