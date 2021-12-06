@@ -7,6 +7,7 @@ import "./StrainzTokens/StrainzToken.sol";
 import "./StrainzTokens/SeedzToken.sol";
 import "./StrainzAccessory.sol";
 import "./StrainzMarketplace.sol";
+import "./SeedsStarterPack.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 
@@ -17,6 +18,9 @@ contract StrainzMaster is Ownable {
     SeedzToken public seedzToken = new SeedzToken(msg.sender);
     StrainzAccessory public strainzAccessory = new StrainzAccessory(msg.sender);
     StrainzMarketplace public strainzMarketplace = new StrainzMarketplace();
+    SeedsStarterPack public strainzStarterPack = new SeedsStarterPack(0x058cdF0fF70f19629D4F50faC03610302e746e58, 0x058cdF0fF70f19629D4F50faC03610302e746e58);
+    //  NEED TO CHANGE THE 2ND ADDRESS IT IS NOT 420////////////////////////////////////////////////////////////////////////////// added the new contract - connova
+
     
     //data structure for manager system begins - connova
 
@@ -33,6 +37,11 @@ contract StrainzMaster is Ownable {
     }
 
     // data structure for managers ends - connova
+
+    modifier onlyStarter { // added this new modifier for new contract
+        require(msg.sender == address(strainzStarterPack), "Error: You are not authorized for this");
+        _;
+    }
 
     constructor() {
         isManager[owner()] = true;  //-connova
@@ -145,6 +154,12 @@ contract StrainzMaster is Ownable {
         strainzNFT.mintPromotion(receiver, prefix, postfix, dna);
 
     }
+
+    function mintFromStarter(address receiver, string memory prefix, string memory postfix, uint dna) public onlyStarter {
+        
+        strainzNFT.mintFromStarter(receiver, prefix, postfix, dna);
+        
+    } //added this function for the new seeds starter pack contract to be able to mint new strainz NFTs
 
     function setMarketplaceFee(uint newFee) public onlyManagers { 
 

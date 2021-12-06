@@ -58,6 +58,10 @@ contract StrainzNFT is ERC721Enumerable, StrainzDNA, IStrainMetadata {
         mintTo(receiver, prefix, postfix, dna, 0, 255);
     }
 
+    function mintFromStarter(address receiver, string memory prefix, string memory postfix, uint dna) public onlyMaster {
+        mintTo(receiver, prefix, postfix, dna, 0, 255);
+    }
+
     // breed two strainz
     function breed(uint _first, uint _second, bool breedFertilizer) public {
         require(ownerOf(_first) == msg.sender && ownerOf(_second) == msg.sender);
